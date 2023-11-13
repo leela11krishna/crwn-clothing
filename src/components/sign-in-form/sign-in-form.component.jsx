@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useContext, useState } from "react";
 import FormInput from "../form-input/form-input.component";
 import "./sign-in-form.styles.scss";
 import Button from "../button/button.component";
@@ -7,6 +7,7 @@ import {
   signInWithGooglePopup,
   signInWithGoogleRedirect,
 } from "../../utils/firebase/firebase.utils";
+import { UserContext } from "../../contexts/user.context";
 
 const defaultFormFields = {
   email: "",
@@ -17,7 +18,7 @@ const SignInForm = () => {
   const [formFields, setFormFields] = useState(defaultFormFields);
   const { email, password } = formFields;
 
-  console.log("Form Fields:", formFields);
+  const { setCurrentUser } = useContext(UserContext);
 
   const resetFormFields = () => {
     setFormFields(defaultFormFields);
@@ -27,11 +28,12 @@ const SignInForm = () => {
     event.preventDefault();
 
     try {
-      const response = await SignInAuthUserWithEmailAndPassword(
+      const { user } = await SignInAuthUserWithEmailAndPassword(
         email,
         password
       );
-      console.log("sign in", response);
+      setCurrentUser(user);
+      console.log("sign in", user);
       resetFormFields();
     } catch (error) {
       switch (error.code) {
@@ -39,7 +41,7 @@ const SignInForm = () => {
           alert("Incorrect password for email");
           break;
         case "auth/user-not-found":
-          alert("User not found.");
+          alert("User nosbt found.");
           break;
         default:
           console.log("Unable to sign in:", error.message);
@@ -77,7 +79,11 @@ const SignInForm = () => {
         />
         <div className="buttons-container">
           <Button type="submit">Sign In</Button>
-          <Button type="button" buttonType="google" onClick={signInWithGoogleRedirect}>
+          <Button
+            type="button"
+            buttonType="google"
+            onClick={signInWithGoogleRedirect}
+          >
             Google Sign In
           </Button>
         </div>
